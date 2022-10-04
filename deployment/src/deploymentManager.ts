@@ -26,7 +26,7 @@ import { armTemplateParameters } from './armTemplateParameters';
  * @param  {credentials} creds
  * @param  {MicrosoftGraph.ServicePrincipal} sp - The service principal used for device simulation
  */
-export async function deployAzureResources(config: IArmTemplateParameters, creds: credentials, sp: MicrosoftGraph.ServicePrincipal): Promise<void>{
+export async function deployAzureResources(config: IArmTemplateParameters, creds: credentials, sp: MicrosoftGraph.ServicePrincipal): Promise<void> {
 
     console.log(`Beginning deployment of Azure resources for solution '${config.solutionName.value}'...`);
 
@@ -37,7 +37,7 @@ export async function deployAzureResources(config: IArmTemplateParameters, creds
     // Define resource group
     const rgSpec: ResourceGroup = {
         location: config.deploymentRegion.value,
-        tags: {IotSolutionType: solutionConstants.solutionType}
+        tags: { IotSolutionType: solutionConstants.solutionType }
     }
 
     // Create resource group
@@ -60,13 +60,13 @@ export async function deployAzureResources(config: IArmTemplateParameters, creds
 function buildParameters(
     config: IArmTemplateParameters,
     creds: credentials,
-    sp: MicrosoftGraph.ServicePrincipal): IArmTemplateParameters{
+    sp: MicrosoftGraph.ServicePrincipal): IArmTemplateParameters {
 
     const parameters: armTemplateParameters = config;
     const cert = createCertificate();
 
     config.azureWebsiteName = config.solutionName;
-    
+
     parameters.remoteEndpointSSLThumbprint.value = cert.thumbprint;
     parameters.remoteEndpointCertificate.value = cert.cert;
     parameters.remoteEndpointCertificateKey.value = cert.key;
@@ -79,13 +79,13 @@ function buildParameters(
     return parameters;
 }
 
-function buildDeployment(config: IArmTemplateParameters, creds: credentials, sp: MicrosoftGraph.ServicePrincipal): Deployment{
+function buildDeployment(config: IArmTemplateParameters, creds: credentials, sp: MicrosoftGraph.ServicePrincipal): Deployment {
 
     const armTemplatePath = '.' + path.sep + solutionConstants.ARM_TEMPLATE_FOLDERNAME + path.sep + 'template.json';
 
     console.log(`Attempting to read ARM template file: '${armTemplatePath}'`);
 
-    const template = JSON.parse(fs.readFileSync(armTemplatePath, {encoding: 'utf-8'}));
+    const template = JSON.parse(fs.readFileSync(armTemplatePath, { encoding: 'utf-8' }));
 
     console.log(`Successfully read ${armTemplatePath}`);
 
@@ -104,38 +104,38 @@ async function validateDeployment(
     deployment: Deployment,
     client: ResourceManagementClient,
     config: IArmTemplateParameters
-){
+) {
 
     console.log('Beginning validation of ARM template...');
-    const validationResponse =  await client.deployments.validate(config.solutionName.value, buildDeploymentName(config), deployment);
+    const validationResponse = await client.deployments.validate(config.solutionName.value, buildDeploymentName(config), deployment);
 
-    if(validationResponse && validationResponse._response.status !== 200){
+    if (validationResponse && validationResponse._response.status !== 200) {
         throw new Error(`Deployment validation failed: ${validationResponse.error.message}`);
     }
 
     console.log('ARM template validation successful.');
 }
 
-function buildDeploymentName(config: IArmTemplateParameters): string{
+function buildDeploymentName(config: IArmTemplateParameters): string {
     return 'deployment-' + config.solutionName.value;
 }
 
 async function deployArmTemplate(
     deployment: Deployment,
     rg: ResourceGroupsCreateOrUpdateResponse,
-    rgUrl: string, 
+    rgUrl: string,
     creds: credentials,
-    client: ResourceManagementClient, 
-    config: IArmTemplateParameters){
+    client: ResourceManagementClient,
+    config: IArmTemplateParameters) {
 
     console.log('Beginning deployment of resource to Azure...');
 
     const lro = await client.deployments.beginCreateOrUpdate(rg.name, buildDeploymentName(config), deployment);
-    
+
     let latestState: string;
 
     // Poll until the operation completes
-    while(!lro.isFinished()){
+    while (!lro.isFinished()) {
 
         latestState = await lro.poll();
         console.log(`Latest state = ${latestState}`);
@@ -143,9 +143,9 @@ async function deployArmTemplate(
         await sleep(armConstants.SLEEP_TIME);
     }
 
-    if(latestState === 'Failed'){
+    if (latestState === 'Failed') {
         console.log(`Deployment failed. View deployment information here: ${rgUrl}/deployments`)
-    }else{
+    } else {
         console.log(`Deployment ${latestState}.`);
         console.log(`>> You can access the Simulation website here: ${getWebsiteUrl(config.solutionName.value, creds)}`);
         console.log(`>> You can access the deployed Azure resources here: ${rgUrl}`);
@@ -154,10 +154,9 @@ async function deployArmTemplate(
 
 async function assignContributorRoleOnResourceGroup(
     resourceGroupName: string,
-    creds: credentials, 
-    servicePrincipalId: string, 
-    config: IArmTemplateParameters)
-{
+    creds: credentials,
+    servicePrincipalId: string,
+    config: IArmTemplateParameters) {
     console.log(`Attempting to assign contributor role to resource group '${resourceGroupName}'...`);
 
     const scope = `/subscriptions/${config.subscriptionId.value}/resourceGroups/${resourceGroupName}`;
@@ -170,28 +169,27 @@ async function assignContributorRoleOnResourceGroup(
 // After creating the new application, the propagation takes sometime and hence we need to try
 // multiple times until the role assignment is successful or it fails after max try.
 async function createRoleAssignmentWithRetry(
-    principalId: string, 
-    scope: string, 
-    roleId: string, 
+    principalId: string,
+    scope: string,
+    roleId: string,
     config: IArmTemplateParameters,
-    creds: credentials): Promise<boolean>
-{
+    creds: credentials): Promise<boolean> {
     const roleDefinitionId = `${scope}/providers/Microsoft.Authorization/roleDefinitions/${roleId}`;
     // clearing the token audience
     const baseUri = creds.environment ? creds.environment.resourceManagerEndpointUrl : undefined;
-    const authzClient = new AuthorizationManagementClient(creds.armCredentials, config.subscriptionId.value, {baseUri});
+    const authzClient = new AuthorizationManagementClient(creds.armCredentials, config.subscriptionId.value, { baseUri });
     const assignmentName = uuid.v1();
     const roleAssignment = {
-            principalId,
-            roleDefinitionId,
-            scope
+        principalId,
+        roleDefinitionId,
+        scope
     };
     let retryCount = 0;
     const promise = new Promise<any>((resolve, reject) => {
         const timer: NodeJS.Timer = setInterval(
             () => {
                 retryCount++;
-                if(retryCount > 1){
+                if (retryCount > 1) {
                     console.log(`Retry ${retryCount} of ${armConstants.MAX_RETRYCOUNT}...`);
                 }
                 return authzClient.roleAssignments.create(scope, assignmentName, roleAssignment)

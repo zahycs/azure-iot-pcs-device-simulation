@@ -23,7 +23,6 @@ export class armTemplateParameters implements IArmTemplateParameters {
     pcsReleaseVersion = { value: armConstants.PCS_RELEASE_VERSION};
     pcsDockerTag = { value: armConstants.PCS_DOCKER_TAG};
     storageEndpointSuffix = { value: ''};
-
     constructor(parameters: Partial<armTemplateParameters> = {}){
         Object.assign(this, parameters);
     }

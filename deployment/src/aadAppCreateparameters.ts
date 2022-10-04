@@ -19,10 +19,8 @@ const readOnlyAppRoleId = 'e5bbd0f5-128e-4362-9dd1-8f253c6082d7';
  */
 export function buildApplicationCreateParameters(
     config: IArmTemplateParameters,
-    creds: credentials): MicrosoftGraph.Application
-{
+    creds: credentials): MicrosoftGraph.Application {
     const homepage = getWebsiteUrl(config.solutionName.value, creds);
-    const identifierUris = [ homepage ];
 
     // Allowing Graph API to sign in and read user profile for newly created application
     const requiredResourceAccess: MicrosoftGraph.RequiredResourceAccess[] = [{
@@ -65,7 +63,6 @@ export function buildApplicationCreateParameters(
         appRoles: appRoles,
         signInAudience: 'AzureADMyOrg',
         displayName: config.solutionName.value,
-        identifierUris: identifierUris,
         web: {
             implicitGrantSettings: {
                 enableAccessTokenIssuance: true,

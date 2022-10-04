@@ -2,8 +2,8 @@
   "profiles": {
     "WebService": {
       "commandName": "Project",
-      "launchBrowser": false,
       "launchUrl": "http://localhost:9003/v1/status",
+      "applicationUrl": "http://localhost:9003/v1/status",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "PCS_IOTHUB_CONNSTRING": "HostName=iothub-xspul.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=96tToeQyEYZWEqbW3DpWENDP062fba2/OV6ujOSgFtI=",
@@ -20,8 +20,7 @@
         "PCS_RESOURCE_GROUP": "",
         "PCS_IOHUB_NAME": "",
         "PCS_SEED_TEMPLATE": ""
-      },
-      "applicationUrl": "http://localhost:9003/v1/status"
+      }
     }
   }
 }

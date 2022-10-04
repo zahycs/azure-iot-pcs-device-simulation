@@ -19,20 +19,20 @@ let _client: Client;
  * @param  {credentials} creds
  * @returns Promise
  */
-export async function createAadApp(config: IArmTemplateParameters, creds: credentials): Promise<string>{
+export async function createAadApp(config: IArmTemplateParameters, creds: credentials): Promise<string> {
 
     const tokenResponse = await creds.graphCredentials.getToken();
 
     _client = createGraphClient(tokenResponse.accessToken);
 
-    if(!_client){
+    if (!_client) {
         throw new Error('Unable to create Microsoft Graph client.')
     }
 
     let appCreationResponse: MicrosoftGraph.Application;
 
     // Build AAD app
-    try{
+    try {
 
         console.log(`Registering AAD app '${config.solutionName.value}'...`);
         const applicationCreateParameters = buildApplicationCreateParameters(config, creds);
@@ -45,10 +45,10 @@ export async function createAadApp(config: IArmTemplateParameters, creds: creden
         const passwordCredential = _buildPasswordCredential()
         await _client.api(`/applications/${appCreationResponse.id}/addPassword`).post(passwordCredential);
         console.log(`Password credentials updated for AAD application '${appCreationResponse.displayName}'.`);
-        
+
         return appCreationResponse.appId;
 
-    }catch(ex){
+    } catch (ex: any) {
 
         console.log(`Error while attempting to register an AAD application with the name '${config.solutionName.value}'...`);
         throw new Error(ex);
@@ -61,17 +61,17 @@ export async function createAadApp(config: IArmTemplateParameters, creds: creden
  * @param  {string} appId
  * @returns Promise
  */
-export async function createServicePrincipal(appId: string): Promise<MicrosoftGraph.ServicePrincipal>{
-    
+export async function createServicePrincipal(appId: string): Promise<MicrosoftGraph.ServicePrincipal> {
+
     const servicePrincipalCreateParameters: any = {
         accountEnabled: true,
         appId: appId
     };
 
-    try{
+    try {
         return await _client.api('/servicePrincipals').post(servicePrincipalCreateParameters);
-    }catch(ex){
-        const msg = ex.message? ex.message : '';
+    } catch (ex: any) {
+        const msg = ex.message ? ex.message : '';
         throw new Error(`Service-principal creation failed. ${msg}`);
     }
 }
@@ -81,8 +81,7 @@ export async function createServicePrincipal(appId: string): Promise<MicrosoftGr
  * 
  * @param  {MicrosoftGraph.ServicePrincipal} sp - The service principal 
  */
-export async function createAppRoleAssignment(sp: MicrosoftGraph.ServicePrincipal): Promise<void>
-{
+export async function createAppRoleAssignment(sp: MicrosoftGraph.ServicePrincipal): Promise<void> {
     console.log('Attempting to assign app admin role to your account...');
 
     // obtain the ID of the logged in user, for use creating an app role assignment
@@ -100,8 +99,8 @@ export async function createAppRoleAssignment(sp: MicrosoftGraph.ServicePrincipa
 }
 
 
-function _buildPasswordCredential(): MicrosoftGraph.PasswordCredential{
-    
+function _buildPasswordCredential(): MicrosoftGraph.PasswordCredential {
+
     const startDate = new Date(Date.now());
     let endDate = new Date(startDate.toISOString());
     const m = moment(endDate);

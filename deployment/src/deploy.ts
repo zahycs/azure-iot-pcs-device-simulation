@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
+require('isomorphic-fetch');
 import { createAadApp, createAppRoleAssignment, createServicePrincipal } from './aadApp';
 import {login} from './auth';
 import { deployAzureResources } from './deploymentManager';

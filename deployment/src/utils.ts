@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
+require('isomorphic-fetch');
 import { Client } from '@microsoft/microsoft-graph-client';
 import { configurationConstants, msGraphConstants, solutionConstants } from './constants';
 import { IArmTemplateParameters } from './interfaces';
